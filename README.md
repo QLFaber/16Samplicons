@@ -4,7 +4,7 @@ Following Moving pictures tutorial for Qiime2 and IMR's workflow https://github.
 
 All analyses are completed on OSC unless stated otherwise: see PGG-OSC-Intro for instructions on getting started with OSC and transferring files in.
 
-My files are in /users/PAS3057/qfaber/quelccaya/seqs/ and everything is being run in /users/PAS3057/qfaber/qiime2_test
+My files are in /users/PAS3057/qfaber/quelccaya/seqs/ and everything is being run in /users/PAS3057/qfaber/try2 CHANGE PATH
 
 Note to self: eventually add in our own practice dataset with the primers we use! How can i have blocks of code within the text like the IMR tutorial has?? and also like not in a readme I guess. Apply to other module too!
 Eventually add in things to help decipher what a good quality score is, etc. The interactive visuals are great so use them!!!
@@ -143,13 +143,15 @@ Note: the length required will be different depending on whether you are doing V
 <pre>
 conda activate /users/PAS3057/qfaber/miniconda3/envs/qiime2
 cd reads_fastq/merged
-echo "sample-id,absolute-filepath,direction" > ~/qiime2_test/reads_qza/manifest.csv
+echo "sample-id,absolute-filepath,direction" > /users/PAS3057/qfaber/try2/reads_qza/manifest.csv
 
 for f in *_merged.fastq.gz; do
     sample=$(echo $f | sed 's/_S[0-9]\+_L001_merged.fastq.gz//')  # remove suffix to get sample ID
     abspath=$(realpath "$f")  # get full path
-    echo "${sample},${abspath},forward" >> ~/qiime2_test/reads_qza/manifest.csv
+    echo "${sample},${abspath},forward" >> /users/PAS3057/qfaber/try2/reads_qza/manifest.csv
 done
+
+cd /users/PAS3057/qfaber/try2
   
 cat reads_qza/manifest.csv | tr ',' '\t' > reads_qza/manifest.tsv
 
