@@ -239,7 +239,7 @@ qiime tools export \
 This will give tsv with number of counts per sample:
 <pre>
 qiime tools export \
-  --input-path deblur_output/table.qza \
+  --input-path table.qza \
   --output-path exported-feature-table
 biom convert \
   -i exported-feature-table/feature-table.biom \
