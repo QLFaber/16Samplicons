@@ -232,7 +232,7 @@ qiime feature-table tabulate-seqs \
 This will save tsv file under exported-taxonomy:
 <pre>
 qiime tools export \
-  --input-path taxonomy.qza \
+  --input-path taxa/classification.qza \
   --output-path exported-taxonomy
 </pre>
 
