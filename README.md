@@ -165,11 +165,11 @@ qiime tools import \
 qiime quality-filter q-score \
    --i-demux reads_qza/reads_merged.qza \
    --o-filter-stats filt_stats.qza \
-   --o-filtered-sequences reads_qza/reads_mered_filt.qza
+   --o-filtered-sequences reads_qza/reads_merged_filt.qza
 
 qiime demux summarize \
-   --i-data reads_qza/reads_mered_filt.qza \
-   --o-visualization reads_qza/reads_mered_filt_summary.qzv
+   --i-data reads_qza/reads_merged_filt.qza \
+   --o-visualization reads_qza/reads_merged_filt_summary.qzv
 </pre>
 
 
@@ -177,7 +177,7 @@ Adjust for number of cores you are using and length you want to trim to dependin
 
 <pre>
 qiime deblur denoise-16S \
-  --i-demultiplexed-seqs reads_qza/reads_mered_filt.qza \
+  --i-demultiplexed-seqs reads_qza/reads_merged_filt.qza \
   --p-trim-length 253 \
   --p-sample-stats \
   --p-jobs-to-start 8 \
