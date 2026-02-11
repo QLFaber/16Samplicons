@@ -2,6 +2,6 @@
 
 ##try1
 
-'''qiime feature-table tabulate-seqs \
+<pre> ```qiime feature-table tabulate-seqs \
   --i-data rep-seqs.qza \
-  --o-visualization rep-seqs.qzv'''
+  --o-visualization rep-seqs.qzv```
