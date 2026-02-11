@@ -10,7 +10,7 @@ Note to self: eventually add in our own practice dataset with the primers we use
 Eventually add in things to help decipher what a good quality score is, etc. The interactive visuals are great so use them!!!
 
 
-##Installing Qiime2
+## Installing Qiime2
 
 <pre> module load miniconda3/24.1.2-py310 </pre>
 
@@ -26,11 +26,9 @@ Test Install
   
 <pre> qiime info </pre>
 
-May need to install additional programs
+May need to install additional programs: I was missing a program in R so I did the following:
 
-I was missing a program in R so I did the following:
-
-R
+<pre> R
 
 if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
@@ -41,45 +39,45 @@ library(GenomeInfoDbData)
 library(phyloseq)
 
 q()
+</pre>
 
-qiime info
+Now Test Install again
+<pre> qiime info </pre>
 
 ## Basic quality check of sequences
 
-##Install fastqc and multiqc
+Install fastqc and multiqc
 
-conda create --prefix /users/PAS3057/qfaber/miniconda3/envs/qualitycheck -c bioconda fastqc multiqc
+<pre>conda create --prefix /users/PAS3057/qfaber/miniconda3/envs/qualitycheck -c bioconda fastqc multiqc
 conda activate /users/PAS3057/qfaber/miniconda3/envs/qualitycheck
 mkdir fastqc_out
 fastqc -t 1 /users/PAS3057/qfaber/quelccaya/seqs/*.fastq.gz -o fastqc_out
-multiqc fastqc_out --filename multiqc_report.html
+multiqc fastqc_out --filename multiqc_report.html </pre>
 
 Look at overall quality of your reads.
 
-##Prepare metadata
-
-Data should be in a .tsv file, which can be created in excel. First column should be sample_id and all ids should be unique.
-
-## importing data
+## Importing data
 This assumes that file names are in the default format provided by AMR that have not been renamed. For more details on importing other files types see https://amplicon-docs.qiime2.org/en/stable/how-to-guides/how-to-import.html 
 
-mkdir reads_qza
-
+<pre> mkdir reads_qza 
+conda activate /users/PAS3057/qfaber/miniconda3/envs/qiime2
 qiime tools import \
   --type 'SampleData[PairedEndSequencesWithQuality]' \
   --input-path /users/PAS3057/qfaber/quelccaya/seqs/ \
   --input-format CasavaOneEightSingleLanePerSampleDirFmt \
   --output-path reads_qza/reads.qza
 
-
 qiime demux summarize \
    --i-data reads_qza/reads.qza \
    --o-visualization reads_qza/reads_summary.qzv
+
+  </pre>
 
 Upload file to https://view.qiime2.org/ to look at interactive quality plots
 
 ## Trim primers with cutadapt
 
+<pre>
 qiime cutadapt trim-paired \
   --i-demultiplexed-sequences reads_qza/reads.qza \
   --p-cores 8 \
@@ -89,13 +87,14 @@ qiime cutadapt trim-paired \
   --p-match-read-wildcards true \
   --p-match-adapter-wildcards true \
   --o-trimmed-sequences reads_qza/reads_trimmed.qza 
+</pre>
 
-
-Note: this is assuming 16S V4 primers, but will change if other primers are used!
+Note: this is assuming 16S V4 primers, but will change slightly if other primers are used!
 Original code trimmed absolutely everything
 
 Take a look at the sequence quality once again:
 
+<pre>
 qiime demux summarize \
    --i-data reads_qza/reads_trimmed.qza \
    --o-visualization reads_qza/reads_trimmed.qzv
@@ -103,13 +102,13 @@ qiime demux summarize \
 qiime tools export \
   --input-path reads_qza/reads_trimmed.qza \
   --output-path reads_fastq
-
-mkdir -p reads_fastq/merged reads_fastq/unmerged
-
+</pre>
 
 
-##Denoising
 
+## Merging in Fastp
+
+<pre>
 qiime tools export \
   --input-path reads_qza/reads_trimmed.qza \
   --output-path reads_fastq
@@ -136,22 +135,22 @@ do
       --overlap_len_require 30 \
       --thread 8
 done
+</pre>
 Note: the length required will be different depending on whether you are doing V4 or V4V5.
 
+
+## Import back into QIIME2
+<pre>
 conda activate /users/PAS3057/qfaber/miniconda3/envs/qiime2
-
 cd reads_fastq/merged
-
-# Create header for manifest
 echo "sample-id,absolute-filepath,direction" > ~/qiime2_test/reads_qza/manifest.csv
 
-# Loop through all merged FASTQs
 for f in *_merged.fastq.gz; do
     sample=$(echo $f | sed 's/_S[0-9]\+_L001_merged.fastq.gz//')  # remove suffix to get sample ID
     abspath=$(realpath "$f")  # get full path
     echo "${sample},${abspath},forward" >> ~/qiime2_test/reads_qza/manifest.csv
 done
-
+  
 cat reads_qza/manifest.csv | tr ',' '\t' > reads_qza/manifest.tsv
 
 qiime tools import \
@@ -159,7 +158,10 @@ qiime tools import \
   --input-path reads_qza/manifest.tsv \
   --input-format SingleEndFastqManifestPhred33V2 \
   --output-path reads_qza/reads_merged.qza
+</pre>
 
+## Denoising with deblur
+<pre>
 qiime quality-filter q-score \
    --i-demux reads_qza/reads_merged.qza \
    --o-filter-stats filt_stats.qza \
@@ -168,8 +170,12 @@ qiime quality-filter q-score \
 qiime demux summarize \
    --i-data reads_qza/reads_mered_filt.qza \
    --o-visualization reads_qza/reads_mered_filt_summary.qzv
-Adjust for number of cores you are using and length you want to trim to depending on primer set
+</pre>
 
+
+Adjust for number of cores you are using and length you want to trim to depending on primer set. I recommend doing this in a job with multiple cores:
+
+<pre>
 qiime deblur denoise-16S \
   --i-demultiplexed-seqs reads_qza/reads_mered_filt.qza \
   --p-trim-length 253 \
@@ -178,9 +184,11 @@ qiime deblur denoise-16S \
   --o-representative-sequences rep-seqs-deblur.qza \
   --o-table table-deblur.qza \
   --o-stats deblur-stats.qza
+</pre>
+
 
 Look at deblur statistics:
-
+<pre>
 qiime deblur visualize-stats \
   --i-deblur-stats deblur-stats.qza \
   --o-visualization deblur-stats.qzv
@@ -188,37 +196,46 @@ qiime deblur visualize-stats \
 mv rep-seqs-deblur.qza rep-seqs.qza
 mv table-deblur.qza table.qza
 
-
-Get sequences of all:
-
-qiime feature-table tabulate-seqs \
-  --i-data rep-seqs.qza \
-  --o-visualization rep-seqs.qzv
+</pre>
 
 
-##taxonomic classification
 
+
+## Taxonomic classification
+
+<pre>
 wget https://data.qiime2.org/classifiers/sklearn-1.4.2/silva/silva-138-99-nb-classifier.qza
+</pre>
 
-Note: run on 8 cores since it takes a while and request 100G of RAM
+
+Note: run on 8 cores since it takes a while and request 100G of RAM:
+<pre>
 qiime feature-classifier classify-sklearn \
    --i-reads rep-seqs.qza \
    --i-classifier silva-138-99-nb-classifier.qza \
    --p-read-orientation same \
    --p-n-jobs 8 \
    --output-dir taxa
+</pre>
 
+## Export for analysis in R
 
-EXPORT ALL TO R:
+Input this into https://view.qiime2.org/ then download fasta file of all seqs
+<pre>
+qiime feature-table tabulate-seqs \
+  --i-data rep-seqs.qza \
+  --o-visualization rep-seqs.qzv
+</pre>
 
+This will save tsv file under exported-taxonomy:
+<pre>
 qiime tools export \
   --input-path taxonomy.qza \
   --output-path exported-taxonomy
+</pre>
 
-This will save tsv file under exported-taxonomy
-
-Enter rep-seqs.qzv to view.qiime2.org and download fasta file
-
+This will give tsv with number of counts per sample:
+<pre>
 qiime tools export \
   --input-path deblur_output/table.qza \
   --output-path exported-feature-table
@@ -226,5 +243,4 @@ biom convert \
   -i exported-feature-table/feature-table.biom \
   -o feature-table.tsv \
   --to-tsv
-
-This will give tsv with number of counts per sample
+</pre>
