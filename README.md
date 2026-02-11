@@ -2,6 +2,8 @@
 
 ##try1
 
-<pre> ```qiime feature-table tabulate-seqs \
+Trying out separating text from code
+
+<pre> qiime feature-table tabulate-seqs \
   --i-data rep-seqs.qza \
-  --o-visualization rep-seqs.qzv```
+  --o-visualization rep-seqs.qzv
