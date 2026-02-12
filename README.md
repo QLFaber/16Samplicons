@@ -184,7 +184,8 @@ qiime deblur denoise-16S \
   --p-jobs-to-start 8 \
   --o-representative-sequences rep-seqs-deblur.qza \
   --o-table table-deblur.qza \
-  --o-stats deblur-stats.qza
+  --o-stats deblur-stats.qza \
+  --p-min-size 1
 </pre>
 
 
@@ -237,17 +238,14 @@ qiime tools export \
 
 This will give tsv with number of counts per sample:
 <pre>
-qiime feature-table filter-features \
-  --i-table table.qza \
-  --p-min-frequency 2 \
-  --o-filtered-table table_no_singletons.qza
+
 qiime tools export \
-  --input-path table_no_singletons.qza \
-  --output-path exported-feature-table_no_singletons
+  --input-path table.qza \
+  --output-path exported-feature-table
 biom convert \
-  -i exported-feature-table_no_singletons/feature-table.biom \
+  -i exported-feature-tables/feature-table.biom \
   -o feature-table.tsv \
   --to-tsv
 </pre>
 
-Note: other outputs remove singletons (taxonomy table and list of seqs, so I removed them from feature table
+Note: Retaining singletons for this analysis
