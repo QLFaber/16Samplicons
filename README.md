@@ -6,8 +6,7 @@ All analyses are completed on OSC unless stated otherwise: see PGG-OSC-Intro for
 
 My files are in /users/PAS3057/qfaber/quelccaya/seqs/ and everything is being run in /users/PAS3057/qfaber/try2 CHANGE PATH
 
-Note to self: eventually add in our own practice dataset with the primers we use! How can i have blocks of code within the text like the IMR tutorial has?? and also like not in a readme I guess. Apply to other module too!
-Eventually add in things to help decipher what a good quality score is, etc. The interactive visuals are great so use them!!!
+Note to self: eventually add in our own practice dataset with the primers we use! Eventually add in things to help decipher what a good quality score is, etc. The interactive visuals are great so use them!!!
 
 
 ## Installing Qiime2
