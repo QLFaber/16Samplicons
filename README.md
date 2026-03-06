@@ -97,21 +97,6 @@ Take a look at the sequence quality once again:
 qiime demux summarize \
    --i-data reads_qza/reads_trimmed.qza \
    --o-visualization reads_qza/reads_trimmed.qzv
-</pre>
-Based on quality plot, most sequences were trimmed at 281 bp and what's left is low quality, so trimming all to 281.
-
-<pre>
-qiime cutadapt trim-paired \
-  --i-demultiplexed-sequences reads_qza/reads_trimmed.qza \
-  --p-length 281 \
-  --p-cores 40 \
-  --o-trimmed-sequences reads_qza/reads_trimmed_281.qza
-</pre>
-
-<pre>
-qiime demux summarize \
-   --i-data reads_qza/reads_trimmed.qza \
-   --o-visualization reads_qza/reads_trimmed.qzv
   
 qiime tools export \
   --input-path reads_qza/reads_trimmed.qza \
@@ -126,13 +111,32 @@ qiime tools export \
 qiime tools export \
   --input-path reads_qza/reads_trimmed.qza \
   --output-path reads_fastq
+</pre>
+Based on quality plot, most sequences were trimmed at 281 bp and what's left is low quality, so trimming all to 281.
 
+<pre>
 conda create --prefix /users/PAS3057/qfaber/miniconda3/envs/bbtools -c bioconda fastp
 conda activate /users/PAS3057/qfaber/miniconda3/envs/fastp
 
+mkdir -p reads_fastq_281
+
+for r1 in reads_fastq/*_R1_*.fastq.gz; do
+    base=$(basename "$r1" | sed 's/_R1_.*//')
+    r2=reads_fastq/${base}_R2_001.fastq.gz
+
+    fastp \
+      -i "$r1" \
+      -I "$r2" \
+      -o reads_fastq_281/${base}_R1_001.fastq.gz \
+      -O reads_fastq_281/${base}_R2_001.fastq.gz \
+      --max_len1 281 \
+      --max_len2 281 \
+      -w 8
+done
+
 mkdir -p reads_fastq/merged reads_fastq/unmerged
 
-for fwd in reads_fastq/*_R1_001.fastq.gz
+for fwd in reads_fastq_281/*_R1_001.fastq.gz
 do
     sample=$(basename "$fwd" _R1_001.fastq.gz)
     rev="reads_fastq/${sample}_R2_001.fastq.gz"
