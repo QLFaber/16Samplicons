@@ -262,7 +262,7 @@ qiime tools export \
   --input-path table.qza \
   --output-path exported-feature-table
 biom convert \
-  -i exported-feature-tables/feature-table.biom \
+  -i exported-feature-table/feature-table.biom \
   -o feature-table.tsv \
   --to-tsv
 </pre>
