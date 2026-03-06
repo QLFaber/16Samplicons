@@ -97,7 +97,22 @@ Take a look at the sequence quality once again:
 qiime demux summarize \
    --i-data reads_qza/reads_trimmed.qza \
    --o-visualization reads_qza/reads_trimmed.qzv
+</pre>
+Based on quality plot, most sequences were trimmed at 281 bp and what's left is low quality, so trimming all to 281.
 
+<pre>
+qiime cutadapt trim-paired \
+  --i-demultiplexed-sequences reads_qza/reads_trimmed.qza \
+  --p-length 281 \
+  --p-cores 40 \
+  --o-trimmed-sequences reads_qza/reads_trimmed_281.qza
+</pre>
+
+<pre>
+qiime demux summarize \
+   --i-data reads_qza/reads_trimmed.qza \
+   --o-visualization reads_qza/reads_trimmed.qzv
+  
 qiime tools export \
   --input-path reads_qza/reads_trimmed.qza \
   --output-path reads_fastq
