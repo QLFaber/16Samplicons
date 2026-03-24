@@ -2,11 +2,11 @@
 
 Following Moving pictures tutorial for Qiime2 and IMR's workflow https://github.com/LangilleLab/microbiome_helper/wiki/Microbiome-Helper-2-Marker-gene-workflow, but with modifications for paired-end reads.
 
-All analyses are completed on OSC unless stated otherwise: see PGG-OSC-Intro for instructions on getting started with OSC and transferring files in.
+All analyses are completed on OSC: see PGG-OSC-Intro for instructions on getting started with OSC, transferring files in, and starting jobs.
 
-My files are in /users/PAS3057/qfaber/quelccaya/seqs/ and everything is being run in /users/PAS3057/qfaber/try2 CHANGE PATH
+My files are in /users/PAS3057/qfaber/quelccaya/seqs/ and everything is being run in /users/PAS3057/qfaber/try2 ###CHANGE PATH
 
-Note to self: eventually add in our own practice dataset with the primers we use! Eventually add in things to help decipher what a good quality score is, etc. The interactive visuals are great so use them!!!
+Note to self: eventually add in our own practice dataset with the primers we use!
 
 
 ## Installing Qiime2
@@ -73,25 +73,27 @@ qiime demux summarize \
   </pre>
 
 Upload file to https://view.qiime2.org/ to look at interactive quality plots
+<img width="2535" height="754" alt="image" src="https://github.com/user-attachments/assets/259bb6d5-d210-48f4-982d-f77de137fd46" />
+Output showing very high quality sequences across all basepairs is typical for recent runs with IMR. Still proceed with trimming primers and trimming off ends as instructed below.
 
 ## Trim primers with cutadapt
 
 <pre>
 qiime cutadapt trim-paired \
   --i-demultiplexed-sequences reads_qza/reads.qza \
-  --p-cores 8 \
-  --p-anywhere-f GTGYCAGCMGCCGCGGTAA \
-  --p-anywhere-r GGACTACNVGGGTWTCTAAT \
+  --p-cores 8 \  ### adjust for number of cores
+  --p-anywhere-f GTGYCAGCMGCCGCGGTAA \  ###change based on primer set
+  --p-anywhere-r GGACTACNVGGGTWTCTAAT \  ###change based on primer set
   --p-error-rate 0.1 \
   --p-match-read-wildcards true \
   --p-match-adapter-wildcards true \
   --o-trimmed-sequences reads_qza/reads_trimmed.qza 
 </pre>
 
-Note: this is assuming 16S V4 primers, but will change slightly if other primers are used!
+Note: this is assuming 16S V4 primers, but will change slightly if other primers are used! Primer sequences listed here: https://imr.bio/protocols.html 
 Original code trimmed absolutely everything
 
-Take a look at the sequence quality once again:
+Take a look at the sequence quality once again: (although it is likely identical to before)
 
 <pre>
 qiime demux summarize \
@@ -109,7 +111,7 @@ qiime tools export \
   --input-path reads_qza/reads_trimmed.qza \
   --output-path reads_fastq
 </pre>
-Based on quality plot, most sequences were trimmed at 281 bp and what's left is low quality, so trimming all to 281.
+Trimming last 20bp- typically known to be lower quality.
 
 <pre>
 conda create --prefix /users/PAS3057/qfaber/miniconda3/envs/bbtools -c bioconda fastp
@@ -126,8 +128,8 @@ for r1 in reads_fastq/*_R1_*.fastq.gz; do
       -I "$r2" \
       -o reads_fastq_281/${base}_R1_001.fastq.gz \
       -O reads_fastq_281/${base}_R2_001.fastq.gz \
-      --max_len1 281 \
-      --max_len2 281 \
+      --max_len1 281 \  ###change based on how much you want to trim from fwd reads
+      --max_len2 281 \  ###change based on how much you want to trim from fwd reads
       -w 8
 done
 
@@ -145,28 +147,28 @@ do
       --merged_out "reads_fastq/merged/${sample}_merged.fastq.gz" \
       --unpaired1 "reads_fastq/unmerged/${sample}_unmerged_R1.fastq.gz" \
       --unpaired2 "reads_fastq/unmerged/${sample}_unmerged_R2.fastq.gz" \
-      --length_required 200 \
+      --length_required 200 \  ###change based on the length required
       --overlap_diff_percent_limit 10 \
       --overlap_len_require 30 \
-      --thread 8
+      --thread 8  ### adjust for number of cores
 done
 </pre>
-Note: the length required will be different depending on whether you are doing V4 or V4V5.
+Note: the length required will be different depending on whether you are doing V4 or V4V5. For V4V5, length_required should likely be ~350 bp.
 
 
 ## Import back into QIIME2
 <pre>
 conda activate /users/PAS3057/qfaber/miniconda3/envs/qiime2
 cd reads_fastq/merged
-echo "sample-id,absolute-filepath,direction" > /users/PAS3057/qfaber/try2/reads_qza/manifest.csv
+echo "sample-id,absolute-filepath,direction" > /users/PAS3057/qfaber/try2/reads_qza/manifest.csv ###change file path
 
 for f in *_merged.fastq.gz; do
     sample=$(echo $f | sed 's/_S[0-9]\+_L001_merged.fastq.gz//')  # remove suffix to get sample ID
     abspath=$(realpath "$f")  # get full path
-    echo "${sample},${abspath},forward" >> /users/PAS3057/qfaber/try2/reads_qza/manifest.csv
+    echo "${sample},${abspath},forward" >> /users/PAS3057/qfaber/try2/reads_qza/manifest.csv  ###change file path
 done
 
-cd /users/PAS3057/qfaber/try2
+cd /users/PAS3057/qfaber/try2  ###change file path
   
 cat reads_qza/manifest.csv | tr ',' '\t' > reads_qza/manifest.tsv
 
@@ -188,16 +190,17 @@ qiime demux summarize \
    --i-data reads_qza/reads_merged_filt.qza \
    --o-visualization reads_qza/reads_merged_filt_summary.qzv
 </pre>
-
+<img width="689" height="466" alt="image" src="https://github.com/user-attachments/assets/1a3f5fa6-095a-407a-9fab-d723230c9f47" />
+reads_merged_filt_summary.qzv is the visual output for the final merged reads. Use output in view.qiime2.org to determine where to trim the sequences. For deblur, they all need to be trimmed to the same length. Based on the image above I picked 253 bp. It will be longer for the V4V5 region.
 
 Adjust for number of cores you are using and length you want to trim to depending on primer set. I recommend doing this in a job with multiple cores:
 
 <pre>
 qiime deblur denoise-16S \
   --i-demultiplexed-seqs reads_qza/reads_merged_filt.qza \
-  --p-trim-length 253 \
+  --p-trim-length 253 \###change based on selected length
   --p-sample-stats \
-  --p-jobs-to-start 8 \
+  --p-jobs-to-start 8 \### adjust for number of cores
   --o-representative-sequences rep-seqs-deblur.qza \
   --o-table table-deblur.qza \
   --o-stats deblur-stats.qza \
@@ -215,8 +218,9 @@ mv rep-seqs-deblur.qza rep-seqs.qza
 mv table-deblur.qza table.qza
 
 </pre>
+<img width="966" height="545" alt="image" src="https://github.com/user-attachments/assets/817b1c78-fd67-442e-9302-91f4e62ec5c2" />
 
-
+Ensure you still have plenty of reads following denoising (column: reads-deblur) and not too many chimeras (column: reads-chimeric)
 
 
 ## Taxonomic classification
@@ -232,7 +236,7 @@ qiime feature-classifier classify-sklearn \
    --i-reads rep-seqs.qza \
    --i-classifier silva-138-99-nb-classifier.qza \
    --p-read-orientation same \
-   --p-n-jobs 8 \
+   --p-n-jobs 8 \ ### adjust for number of cores
    --output-dir taxa
 </pre>
 
