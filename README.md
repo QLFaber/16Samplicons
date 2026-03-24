@@ -98,9 +98,6 @@ qiime demux summarize \
    --i-data reads_qza/reads_trimmed.qza \
    --o-visualization reads_qza/reads_trimmed.qzv
   
-qiime tools export \
-  --input-path reads_qza/reads_trimmed.qza \
-  --output-path reads_fastq
 </pre>
 
 
