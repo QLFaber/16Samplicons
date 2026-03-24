@@ -136,7 +136,7 @@ mkdir -p reads_fastq/merged reads_fastq/unmerged
 for fwd in reads_fastq_281/*_R1_001.fastq.gz
 do
     sample=$(basename "$fwd" _R1_001.fastq.gz)
-    rev="reads_fastq/${sample}_R2_001.fastq.gz"
+    rev="reads_fastq_281/${sample}_R2_001.fastq.gz"
 
     fastp \
       -i "$fwd" \
