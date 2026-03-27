@@ -120,18 +120,21 @@ conda activate /users/PAS3057/qfaber/miniconda3/envs/fastp
 mkdir -p reads_fastq_281
 
 for r1 in reads_fastq/*_R1_*.fastq.gz; do
-    base=$(basename "$r1" | sed 's/_R1_.*//')
-    r2=reads_fastq/${base}_R2_001.fastq.gz
+    base=${r1%_R1_001.fastq.gz}
+    r2=${base}_R2_001.fastq.gz
 
-    fastp \
-      -i "$r1" \
-      -I "$r2" \
-      -o reads_fastq_281/${base}_R1_001.fastq.gz \
-      -O reads_fastq_281/${base}_R2_001.fastq.gz \
-      --max_len1 281 \  ###change based on how much you want to trim from fwd reads
-      --max_len2 281 \  ###change based on how much you want to trim from fwd reads
-      -w 8
+    if [[ -f "$r2" ]]; then
+        echo "Processing $base"
+        fastp -i "$r1" -I "$r2" \
+              -o reads_fastq_281/$(basename ${base})_R1_001.fastq.gz \
+              -O reads_fastq_281/$(basename ${base})_R2_001.fastq.gz \
+              --max_len1 280 --max_len2 220 -w 40
+    else
+        echo "Skipping $base: R2 file not found"
+    fi
 done
+
+##For max length, determine based on quality
 
 mkdir -p reads_fastq/merged reads_fastq/unmerged
 
@@ -140,6 +143,14 @@ do
     sample=$(basename "$fwd" _R1_001.fastq.gz)
     rev="reads_fastq_281/${sample}_R2_001.fastq.gz"
 
+    # Check if R2 exists before running fastp
+    if [[ ! -f "$rev" ]]; then
+        echo "Skipping $sample: R2 file not found"
+        continue
+    fi
+
+    echo "Processing $sample..."
+
     fastp \
       -i "$fwd" \
       -I "$rev" \
@@ -147,13 +158,13 @@ do
       --merged_out "reads_fastq/merged/${sample}_merged.fastq.gz" \
       --unpaired1 "reads_fastq/unmerged/${sample}_unmerged_R1.fastq.gz" \
       --unpaired2 "reads_fastq/unmerged/${sample}_unmerged_R2.fastq.gz" \
-      --length_required 200 \  ###change based on the length required
+      --length_required 200 \   # change based on the length required
       --overlap_diff_percent_limit 10 \
       --overlap_len_require 30 \
-      --thread 8  ### adjust for number of cores
+      --thread 40
 done
 </pre>
-Note: the length required will be different depending on whether you are doing V4 or V4V5. For V4V5, length_required should likely be ~350 bp.
+Note: the length required will be different depending on whether you are doing V4 or V4V5. For V4V5, length_required should likely be ~350 bp. Also change threads for # of cores.
 
 
 ## Import back into QIIME2
