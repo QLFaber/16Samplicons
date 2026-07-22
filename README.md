@@ -81,16 +81,16 @@ Output showing very high quality sequences across all basepairs is typical for r
 <pre>
 qiime cutadapt trim-paired \
   --i-demultiplexed-sequences reads_qza/reads.qza \
-  --p-cores 8 \  ### adjust for number of cores
-  --p-anywhere-f GTGYCAGCMGCCGCGGTAA \  ###change based on primer set
-  --p-anywhere-r GGACTACNVGGGTWTCTAAT \  ###change based on primer set
+  --p-cores 8 \
+  --p-anywhere-f GTGYCAGCMGCCGCGGTAA \
+  --p-anywhere-r GGACTACNVGGGTWTCTAAT \
   --p-error-rate 0.1 \
   --p-match-read-wildcards true \
   --p-match-adapter-wildcards true \
   --o-trimmed-sequences reads_qza/reads_trimmed.qza 
 </pre>
 
-Note: this is assuming 16S V4 primers, but will change slightly if other primers are used! Primer sequences listed here: https://imr.bio/protocols.html 
+Note: this is assuming 16S V4 primers, but will change slightly if other primers are used! Primer sequences listed here: https://imr.bio/protocols.html . Also need to adjust for the number of CPUs.
 Original code trimmed absolutely everything
 
 Take a look at the sequence quality once again: (although it is likely identical to before)
@@ -171,12 +171,12 @@ Note: the length required will be different depending on whether you are doing V
 <pre>
 conda activate /users/PAS3057/qfaber/miniconda3/envs/qiime2
 cd reads_fastq/merged
-echo "sample-id,absolute-filepath,direction" > /users/PAS3057/qfaber/try2/reads_qza/manifest.csv ###change file path
+echo "sample-id,absolute-filepath,direction" > /users/PAS3057/qfaber/try2/reads_qza/manifest.csv
 
 for f in *_merged.fastq.gz; do
-    sample=$(echo $f | sed 's/_S[0-9]\+_L001_merged.fastq.gz//')  # remove suffix to get sample ID
+    sample=$(echo $f | sed 's/_S[0-9]\+_L001_merged.fastq.gz//')
     abspath=$(realpath "$f")  # get full path
-    echo "${sample},${abspath},forward" >> /users/PAS3057/qfaber/try2/reads_qza/manifest.csv  ###change file path
+    echo "${sample},${abspath},forward" >> /users/PAS3057/qfaber/try2/reads_qza/manifest.csv
 done
 
 cd /users/PAS3057/qfaber/try2  ###change file path
@@ -189,6 +189,8 @@ qiime tools import \
   --input-format SingleEndFastqManifestPhred33V2 \
   --output-path reads_qza/reads_merged.qza
 </pre>
+
+Remember to change file paths!
 
 ## Denoising with deblur
 <pre>
@@ -247,9 +249,11 @@ qiime feature-classifier classify-sklearn \
    --i-reads rep-seqs.qza \
    --i-classifier silva-138-99-nb-classifier.qza \
    --p-read-orientation same \
-   --p-n-jobs 8 \ ### adjust for number of cores
+   --p-n-jobs 8 \
    --output-dir taxa
 </pre>
+
+Adjust for number of cores.
 
 ## Export for analysis in R
 
