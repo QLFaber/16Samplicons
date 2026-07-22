@@ -14,7 +14,7 @@ Note to self: eventually add in our own practice dataset with the primers we use
 <pre> module load miniconda3/24.1.2-py310 </pre>
 
 <pre> conda env create \
-  --prefix /users/PAS3057/qfaberconda3/envs/amplicon-2026.1 \
+  --prefix /users/PAS3057/qfaber/miniconda3/envs/amplicon-2026.1 \
   --file https://raw.githubusercontent.com/qiime2/distributions/refs/heads/dev/2026.1/amplicon/released/qiime2-amplicon-ubuntu-latest-conda.yml </pre>
 
 This will take longer to install than normal programs with conda due to the amount of packages required.
