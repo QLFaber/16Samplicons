@@ -158,7 +158,7 @@ do
       --merged_out "reads_fastq/merged/${sample}_merged.fastq.gz" \
       --unpaired1 "reads_fastq/unmerged/${sample}_unmerged_R1.fastq.gz" \
       --unpaired2 "reads_fastq/unmerged/${sample}_unmerged_R2.fastq.gz" \
-      --length_required 200 \   # change based on the length required
+      --length_required 200 \  
       --overlap_diff_percent_limit 10 \
       --overlap_len_require 30 \
       --thread 40
@@ -175,7 +175,7 @@ echo "sample-id,absolute-filepath,direction" > /users/PAS3057/qfaber/try2/reads_
 
 for f in *_merged.fastq.gz; do
     sample=$(echo $f | sed 's/_S[0-9]\+_L001_merged.fastq.gz//')
-    abspath=$(realpath "$f")  # get full path
+    abspath=$(realpath "$f")  
     echo "${sample},${abspath},forward" >> /users/PAS3057/qfaber/try2/reads_qza/manifest.csv
 done
 
@@ -211,15 +211,16 @@ Adjust for number of cores you are using and length you want to trim to dependin
 <pre>
 qiime deblur denoise-16S \
   --i-demultiplexed-seqs reads_qza/reads_merged_filt.qza \
-  --p-trim-length 253 \###change based on selected length
+  --p-trim-length 253 \
   --p-sample-stats \
-  --p-jobs-to-start 8 \### adjust for number of cores
+  --p-jobs-to-start 8 \
   --o-representative-sequences rep-seqs-deblur.qza \
   --o-table table-deblur.qza \
   --o-stats deblur-stats.qza \
   --p-min-size 1
 </pre>
 
+Change 253 based on selected length and the # of cores!
 
 Look at deblur statistics:
 <pre>
